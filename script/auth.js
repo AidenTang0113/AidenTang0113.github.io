@@ -31,7 +31,7 @@ async function signIn(email, password) {
     return data
 }
 
-async function getCurrentUserProfile() {
+async function getSession() {
     const { data: { user }, error } = await supabase.auth.getUser()
     if (error) throw error
     
@@ -46,4 +46,4 @@ async function getCurrentUserProfile() {
     return { ...user, profile }
 }
 
-export { signUp, signIn, getCurrentUserProfile }
+export { signUp, signIn, getSession }
