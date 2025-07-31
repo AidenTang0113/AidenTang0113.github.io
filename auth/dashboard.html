@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="column">
+        <h2>Welcome back, <span id="userEmail"></span>!</h2>
+        <button id="logoutBtn" class="button button-outline">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getSession, signOut } from '../js/auth.js'
+    
+    getSession().then(session => {
+      if (!session) {
+        window.location.href = '/auth/login.html'
+        return
+      }
+      document.getElementById('userEmail').textContent = session.user.email
+    })
+    
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await signOut()
+        window.location.href = '/auth/login.html'
+      } catch (error) {
+        alert(`Log out failed: ${error.message}`)
+      }
+    })
+  </script>
+</body>
+</html>
