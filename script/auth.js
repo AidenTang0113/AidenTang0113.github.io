@@ -1,35 +1,32 @@
 import { supabase } from './supabase.js'
 
-async function signUp(email, password) {
-  const { user, error } = await supabase.auth.signUp({
-    email,
-    password
-  })
-  
-  if (error) throw error
-  return user
+const ADMIN_USERNAME = 'Administrator'
+
+async function signUp(email, password, username) {
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username, is_admin: username === ADMIN_USERNAME } }
+    })
+    if (error) throw error
+    return data
 }
 
-
 async function signIn(email, password) {
-  const { user, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  })
-  
-  if (error) throw error
-  return user
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    return data
 }
 
 async function signOut() {
-  const { error } = await supabase.auth.signOut()
-  if (error) throw error
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
 }
 
-async function getSession() {
-  const { data, error } = await supabase.auth.getSession()
-  if (error) throw error
-  return data.session
+async function getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error) throw error
+    return user
 }
 
-export { signUp, signIn, signOut, getSession }
+export { signUp, signIn, signOut, getCurrentUser, ADMIN_USERNAME }
