@@ -1,19 +1,47 @@
-<div id="userGreeting"></div>
-<div id="adminSection" style="display:none">
-    <a href="/auth/admin.html">Admin Dashboard</a>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="column">
+                <h1>Welcome, <span id="username"></span>!</h1>
+                <div id="adminSection" style="display:none;">
+                    <a href="/auth/admin.html" class="button">Admin Panel</a>
+                </div>
+                <button id="logoutBtn" class="button button-outline">Logout</button>
+            </div>
+        </div>
+    </div>
 
-<script type="module">
-    import { getCurrentUserProfile } from '../script/auth.js'
-    
-    const user = await getCurrentUserProfile()
-    
-    document.getElementById('userGreeting').innerHTML = `
-        <h1>Welcome, ${user.profile.username}!</h1>
-        <p>Email: ${user.email}</p>
-    `
-    
-    if (user.profile.is_admin) {
-        document.getElementById('adminSection').style.display = 'block'
-    }
-</script>
+    <script type="module">
+        import { getCurrentUser, signOut } from '../script/auth.js'
+        
+        try {
+            const { user, profile } = await getCurrentUser()
+            
+            document.getElementById('username').textContent = profile.username || user.email
+            
+            if (profile.is_admin) {
+                document.getElementById('adminSection').style.display = 'block'
+            }
+            
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                try {
+                    await signOut()
+                    window.location.href = '/auth/login.html'
+                } catch (error) {
+                    alert(`Logout failed: ${error.message}`)
+                }
+            })
+        } catch (error) {
+            console.error('Auth error:', error)
+            window.location.href = '/auth/login.html'
+        }
+    </script>
+</body>
+</html>
