@@ -1,19 +1,19 @@
 import { supabase } from './supabase.js'
 
-export async function getAllUsers() {
-    const { data, error } = await supabase.from('users').select('*')
+async function getAllUsers() {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
     if (error) throw error
     return data
 }
 
-export async function deleteUser(userId) {
-    const { error } = await supabase.auth.admin.deleteUser(userId)
-    if (error) throw error
-}
-
-export async function updateUserRole(userId, isAdmin) {
-    const { error } = await supabase.from('users')
+async function updateUserAdminStatus(userId, isAdmin) {
+    const { error } = await supabase
+        .from('profiles')
         .update({ is_admin: isAdmin })
         .eq('id', userId)
     if (error) throw error
 }
+
+export { getAllUsers, updateUserAdminStatus }

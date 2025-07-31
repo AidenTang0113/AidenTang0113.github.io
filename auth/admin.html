@@ -1,57 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Panel</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <div class="admin-container">
-        <h1>User Management</h1>
-        <div id="usersList"></div>
-        <button id="logoutBtn">Logout</button>
-    </div>
+<div id="usersList"></div>
 
-    <script type="module">
-        import { signOut, getCurrentUser } from '../script/auth.js'
-        import { getAllUsers, deleteUser, updateUserRole } from '../sript/admin.js'
+<script type="module">
+    import { getAllUsers, updateUserAdminStatus } from '../script/admin.js'
+    
+    async function renderUsers() {
+        const users = await getAllUsers()
         
-        const currentUser = await getCurrentUser()
-        if (!currentUser?.user_metadata?.is_admin) {
-            window.location.href = '/auth/dashboard.html'
-        }
-
-        async function loadUsers() {
-            const users = await getAllUsers()
-            const usersList = document.getElementById('usersList')
-            
-            usersList.innerHTML = users.map(user => `
-                <div class="user-card">
-                    <p>${user.email} (${user.user_metadata?.username || 'No username'})</p>
-                    <label>
-                        Admin: <input type="checkbox" 
-                              ${user.user_metadata?.is_admin ? 'checked' : ''}
-                              onchange="updateRole('${user.id}', this.checked)">
-                    </label>
-                    <button onclick="deleteUser('${user.id}')">Delete</button>
-                </div>
-            `).join('')
-        }
-
-        window.updateRole = async (userId, isAdmin) => {
-            await updateUserRole(userId, isAdmin)
-            loadUsers()
-        }
-
-        window.deleteUser = async (userId) => {
-            if (confirm('Are you sure you want to delete this user?')) {
-                await deleteUser(userId)
-                loadUsers()
-            }
-        }
-
-        document.getElementById('logoutBtn').addEventListener('click', signOut)
-        
-        loadUsers()
-    </script>
-</body>
-</html>
+        document.getElementById('usersList').innerHTML = users.map(user => `
+            <div class="user-card">
+                <h3>${user.username}</h3>
+                <p>${user.email}</p>
+                <label>
+                    Admin: 
+                    <input type="checkbox" ${user.is_admin ? 'checked' : ''} 
+                           onchange="updateAdminStatus('${user.id}', this.checked)">
+                </label>
+            </div>
+        `).join('')
+    }
+    
+    window.updateAdminStatus = async (userId, isAdmin) => {
+        await updateUserAdminStatus(userId, isAdmin)
+        renderUsers()
+    }
+    
+    renderUsers()
+</script>

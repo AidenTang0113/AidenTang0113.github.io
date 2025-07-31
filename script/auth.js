@@ -1,14 +1,27 @@
 import { supabase } from './supabase.js'
 
-const ADMIN_USERNAME = 'Administrator'
+const ADMIN_USERNAMES = ['Administrator', 'SuperAdmin']
 
 async function signUp(email, password, username) {
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { username, is_admin: username === ADMIN_USERNAME } }
+        options: {
+            data: {
+                username,
+                is_admin: ADMIN_USERNAMES.includes(username)
+            }
+        }
     })
     if (error) throw error
+    
+    await supabase.from('profiles').upsert({
+        id: data.user.id,
+        username,
+        email,
+        is_admin: ADMIN_USERNAMES.includes(username)
+    })
+    
     return data
 }
 
@@ -18,15 +31,19 @@ async function signIn(email, password) {
     return data
 }
 
-async function signOut() {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-}
-
-async function getCurrentUser() {
+async function getCurrentUserProfile() {
     const { data: { user }, error } = await supabase.auth.getUser()
     if (error) throw error
-    return user
+    
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+        
+    if (profileError) throw profileError
+    
+    return { ...user, profile }
 }
 
-export { signUp, signIn, signOut, getCurrentUser, ADMIN_USERNAME }
+export { signUp, signIn, getCurrentUserProfile }

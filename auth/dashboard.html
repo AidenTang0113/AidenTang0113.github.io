@@ -1,33 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <div class="dashboard-container">
-        <h1>Welcome <span id="username"></span></h1>
-        <div id="adminLink"></div>
-        <button id="logoutBtn">Logout</button>
-    </div>
+<div id="userGreeting"></div>
+<div id="adminSection" style="display:none">
+    <a href="/auth/admin.html">Admin Dashboard</a>
+</div>
 
-    <script type="module">
-        import { signOut, getCurrentUser, ADMIN_USERNAME } from '../script/auth.js'
-        
-        const user = await getCurrentUser()
-        if (!user) window.location.href = '/auth/login.html'
-        
-        document.getElementById('username').textContent = user.user_metadata?.username || user.email
-        
-        if (user.user_metadata?.is_admin || user.user_metadata?.username === ADMIN_USERNAME) {
-            document.getElementById('adminLink').innerHTML = 
-                '<a href="/auth/admin.html">Admin Panel</a>'
-        }
-        
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await signOut()
-            window.location.href = '/auth/login.html'
-        })
-    </script>
-</body>
-</html>
+<script type="module">
+    import { getCurrentUserProfile } from '../script/auth.js'
+    
+    const user = await getCurrentUserProfile()
+    
+    document.getElementById('userGreeting').innerHTML = `
+        <h1>Welcome, ${user.profile.username}!</h1>
+        <p>Email: ${user.email}</p>
+    `
+    
+    if (user.profile.is_admin) {
+        document.getElementById('adminSection').style.display = 'block'
+    }
+</script>
