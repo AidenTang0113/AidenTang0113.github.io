@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="css/milligram.min.css">
+    <style>
+        .container { max-width: 1000px; margin: 50px auto; }
+        .hidden { display: none; }
+        .error { color: #c00; }
+        table { width: 100%; margin: 20px 0; }
+        .actions { white-space: nowrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+        <p id="not-admin" class="error hidden">You must be an administrator to access this page.</p>
+        
+        <div id="admin-content" class="hidden">
+            <h2>User Management</h2>
+            
+            <div class="row">
+                <div class="column">
+                    <button id="add-user-btn" class="button">Add New User</button>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Admin</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table">
+                    <!-- Users will be populated here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <a href="index.html" class="button button-outline">Back to Home</a>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="add-user-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New User</h2>
+            <form id="add-user-form">
+                <label for="new-username">Username</label>
+                <input type="text" id="new-username" required>
+                
+                <label for="new-email">Email</label>
+                <input type="email" id="new-email" required>
+                
+                <label for="new-password">Password</label>
+                <input type="password" id="new-password" required>
+                
+                <label>
+                    <input type="checkbox" id="new-is-admin">
+                    Administrator
+                </label>
+                
+                <button type="submit" class="button">Create User</button>
+            </form>
+            <p id="add-user-error" class="error"></p>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit User</h2>
+            <form id="edit-user-form">
+                <input type="hidden" id="edit-user-id">
+                
+                <label for="edit-username">Username</label>
+                <input type="text" id="edit-username" required>
+                
+                <label for="edit-email">Email</label>
+                <input type="email" id="edit-email" required>
+                
+                <label for="edit-password">Password (leave blank to keep current)</label>
+                <input type="password" id="edit-password">
+                
+                <label>
+                    <input type="checkbox" id="edit-is-admin">
+                    Administrator
+                </label>
+                
+                <button type="submit" class="button">Save Changes</button>
+            </form>
+            <p id="edit-user-error" class="error"></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

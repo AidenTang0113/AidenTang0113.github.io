@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication</title>
+    <link rel="stylesheet" href="css/milligram.min.css">
+    <style>
+        .container { max-width: 500px; margin: 50px auto; }
+        .hidden { display: none; }
+        .error { color: #c00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="auth-title">Authentication</h1>
+        
+        <div id="login-view" class="hidden">
+    <form id="login-form">
+        <fieldset>
+            <label for="login-identifier">Username or Email</label>
+            <input type="text" id="login-identifier" placeholder="Enter your username or email" required>
+            
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Enter your password" required>
+            
+            <button type="submit" class="button">Login</button>
+        </fieldset>
+    </form>
+    <p id="login-error" class="error"></p>
+    <p>Don't have an account? <a href="?mode=register">Register here</a></p>
+</div>
+        
+        <div id="register-view" class="hidden">
+            <form id="register-form">
+                <fieldset>
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" placeholder="Choose a username" required>
+                    
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="Enter your email" required>
+                    
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" placeholder="Choose a password (min 6 characters)" required>
+                    
+                    <label for="register-confirm">Confirm Password</label>
+                    <input type="password" id="register-confirm" placeholder="Confirm your password" required>
+                    
+                    <button type="submit" class="button">Register</button>
+                </fieldset>
+            </form>
+            <p id="register-error" class="error"></p>
+            <p>Already have an account? <a href="?mode=login">Login here</a></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Login form submission
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const identifier = document.getElementById('login-identifier').value;
+    const password = document.getElementById('login-password').value;
+    const errorElement = document.getElementById('login-error');
+    
+    errorElement.textContent = '';
+    
+    const { error } = await loginWithUsernameOrEmail(identifier, password);
+    
+    if (error) {
+        errorElement.textContent = error.message;
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+    </script>
+</body>
+</html>

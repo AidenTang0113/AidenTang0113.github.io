@@ -1,30 +1,63 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login System</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
-  <link rel="stylesheet" href="/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth System</title>
+    <link rel="stylesheet" href="css/milligram.min.css">
+    <style>
+        .container { max-width: 800px; margin: 50px auto; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="row">
-      <div class="column text-center">
-        <h1>Welcome using our service.</h1>
-        <div class="button-group">
-          <a href="/auth/login.html" class="button">Login</a>
-          <a href="/auth/register.html" class="button button-outline">Register</a>
+    <div class="container">
+        <h1>Welcome to Our System</h1>
+        
+        <div id="logged-out-view">
+            <p>Please login or register to continue.</p>
+            <a href="auth.html?mode=login" class="button">Login</a>
+            <a href="auth.html?mode=register" class="button button-outline">Register</a>
         </div>
-      </div>
+        
+        <div id="logged-in-view" class="hidden">
+            <p>Welcome, <span id="username-display"></span>!</p>
+            <button id="logout-btn" class="button">Logout</button>
+            
+            <div id="admin-link" class="hidden">
+                <a href="admin.html" class="button">Admin Panel</a>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script type="module">
-    import { getSession } from './script/auth.js'
-    getSession().then(session => {
-      if (session) window.location.href = '/auth/dashboard.html'
-    })
-  </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            
+            if (user) {
+                document.getElementById('logged-out-view').classList.add('hidden');
+                document.getElementById('logged-in-view').classList.remove('hidden');
+                document.getElementById('username-display').textContent = user.email;
+                
+                // Check if user is admin
+                const { data: userData, error: userError } = await supabase
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (userData?.is_admin) {
+                    document.getElementById('admin-link').classList.remove('hidden');
+                }
+            }
+            
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
 </body>
 </html>
