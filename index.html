@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickCommand · 快捷命令 — 手势即命令</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --primary: #4A90D9;
+    --primary-dark: #1A5276;
+    --accent: #4FC3F7;
+    --accent-glow: rgba(79, 195, 247, 0.4);
+    --bg: #0a0e1a;
+    --bg-card: rgba(255,255,255,0.04);
+    --text: #e8ecf1;
+    --text-dim: #8b95a7;
+    --gradient: linear-gradient(135deg, #4A90D9, #4FC3F7);
+    --gradient-text: linear-gradient(135deg, #4FC3F7, #66D9EF, #4A90D9);
+  }
+  body {
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* ===== 动态背景 ===== */
+  .bg-animation {
+    position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; overflow:hidden;
+  }
+  .bg-animation .orb {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15;
+    animation: float 20s ease-in-out infinite;
+  }
+  .orb-1 { width:500px; height:500px; background: #4A90D9; top:-100px; left:-100px; }
+  .orb-2 { width:400px; height:400px; background: #4FC3F7; bottom:-50px; right:-50px; animation-delay:-7s; }
+  .orb-3 { width:300px; height:300px; background: #1A5276; top:40%; left:60%; animation-delay:-14s; }
+  @keyframes float {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(50px,-30px) scale(1.1); }
+    66% { transform: translate(-30px,40px) scale(0.95); }
+  }
+
+  /* ===== 导航栏 ===== */
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    padding: 18px 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    backdrop-filter: blur(20px);
+    background: rgba(10,14,26,0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 1.3rem;
+  }
+  .logo-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--gradient);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 15px var(--accent-glow);
+    font-size: 1.1rem;
+  }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    color: var(--text-dim); text-decoration: none; font-size: 0.95rem;
+    transition: color 0.3s; position: relative;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left:0; width:0; height:2px;
+    background: var(--accent); transition: width 0.3s;
+  }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-cta {
+    padding: 8px 22px; border-radius: 30px;
+    background: var(--gradient); color: #fff; text-decoration: none;
+    font-size: 0.9rem; font-weight: 500;
+    box-shadow: 0 4px 15px var(--accent-glow);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
+
+  /* ===== Hero ===== */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 120px 5% 80px;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 30px;
+    background: rgba(79,195,247,0.1); border: 1px solid rgba(79,195,247,0.2);
+    color: var(--accent); font-size: 0.85rem; margin-bottom: 28px;
+  }
+  .hero-badge .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem); font-weight: 900;
+    line-height: 1.1; margin-bottom: 24px;
+  }
+  .hero h1 .gradient {
+    background: var(--gradient-text); -webkit-background-clip: text;
+    background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: clamp(1rem, 2vw, 1.3rem); color: var(--text-dim);
+    max-width: 600px; margin-bottom: 40px;
+  }
+  .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .btn-primary {
+    padding: 14px 36px; border-radius: 50px; border: none; cursor: pointer;
+    background: var(--gradient); color: #fff; font-size: 1rem; font-weight: 600;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 8px 30px var(--accent-glow);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px var(--accent-glow); }
+  .btn-secondary {
+    padding: 14px 36px; border-radius: 50px; cursor: pointer;
+    background: transparent; color: var(--text); font-size: 1rem; font-weight: 500;
+    text-decoration: none; border: 1px solid rgba(255,255,255,0.15);
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); background: rgba(79,195,247,0.05); }
+
+  /* ===== 手势动画展示 ===== */
+  .gesture-demo {
+    margin-top: 60px; position: relative;
+    width: 280px; height: 280px;
+  }
+  .gesture-demo .phone {
+    width: 100%; height: 100%; border-radius: 40px;
+    background: linear-gradient(145deg, #111827, #1a1f3a);
+    border: 2px solid rgba(255,255,255,0.08);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(79,195,247,0.05);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .gesture-demo .phone::before {
+    content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.1);
+  }
+  .gesture-svg {
+    width: 70%; height: 70%;
+    filter: drop-shadow(0 0 10px var(--accent-glow));
+  }
+  .gesture-svg path {
+    fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round;
+    stroke-dasharray: 500; stroke-dashoffset: 500;
+    animation: drawGesture 3s ease-in-out infinite;
+  }
+  @keyframes drawGesture {
+    0% { stroke-dashoffset: 500; }
+    50% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -500; }
+  }
+  .gesture-label {
+    position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
+    color: var(--text-dim); font-size: 0.9rem; white-space: nowrap;
+  }
+  .gesture-label .action {
+    color: var(--accent); font-weight: 500;
+  }
+
+  /* ===== Section 通用 ===== */
+  section { padding: 100px 5%; max-width: 1200px; margin: 0 auto; }
+  .section-title { text-align: center; margin-bottom: 60px; }
+  .section-title h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; margin-bottom: 12px;
+  }
+  .section-title p { color: var(--text-dim); font-size: 1.1rem; }
+
+  /* ===== 功能卡片 ===== */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px; padding: 36px 30px;
+    transition: transform 0.3s, border-color 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: ''; position: absolute; top:0; left:0; right:0; height: 2px;
+    background: var(--gradient); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s;
+  }
+  .feature-card:hover { transform: translateY(-6px); border-color: rgba(79,195,247,0.2); }
+  .feature-card:hover::before { transform: scaleX(1); }
+  .feature-icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: rgba(79,195,247,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; margin-bottom: 20px;
+  }
+  .feature-card h3 { font-size: 1.25rem; margin-bottom: 10px; }
+  .feature-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ===== 手势展示区 ===== */
+  .gestures-showcase {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 20px; max-width: 900px; margin: 0 auto;
+  }
+  .gesture-item {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px; padding: 28px 16px;
+    text-align: center; transition: transform 0.3s, border-color 0.3s;
+  }
+  .gesture-item:hover { transform: translateY(-4px); border-color: rgba(79,195,247,0.3); }
+  .gesture-item svg { width: 48px; height: 48px; margin-bottom: 12px; }
+  .gesture-item svg path, .gesture-item svg circle, .gesture-item svg polyline {
+    fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .gesture-item span { font-size: 0.85rem; color: var(--text-dim); }
+
+  /* ===== 使用流程 ===== */
+  .steps {
+    display: flex; flex-wrap: wrap; gap: 30px; justify-content: center;
+  }
+  .step {
+    flex: 1; min-width: 250px; max-width: 350px;
+    text-align: center; position: relative;
+  }
+  .step-number {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--gradient);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; font-weight: 700; color: #fff;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 25px var(--accent-glow);
+  }
+  .step h3 { font-size: 1.2rem; margin-bottom: 8px; }
+  .step p { color: var(--text-dim); font-size: 0.95rem; }
+  .step::after {
+    content: '→'; position: absolute; right: -20px; top: 20px;
+    font-size: 1.5rem; color: var(--accent); opacity: 0.4;
+  }
+  .step:last-child::after { display: none; }
+
+  /* ===== 下载区 ===== */
+  .download-section {
+    text-align: center;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 30px; padding: 80px 5%;
+    position: relative; overflow: hidden;
+  }
+  .download-section::before {
+    content: ''; position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(79,195,247,0.06) 0%, transparent 60%);
+    animation: rotate 20s linear infinite;
+  }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+  .download-section > * { position: relative; z-index: 1; }
+  .download-section h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 16px;
+  }
+  .download-section p {
+    color: var(--text-dim); margin-bottom: 36px; font-size: 1.1rem;
+  }
+  .download-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .download-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 28px; border-radius: 14px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    text-decoration: none; color: var(--text);
+    transition: transform 0.3s, background 0.3s;
+  }
+  .download-badge:hover { transform: translateY(-2px); background: rgba(255,255,255,0.1); }
+  .download-badge .icon { font-size: 1.8rem; }
+  .download-badge .text { text-align: left; line-height: 1.2; }
+  .download-badge .text small { font-size: 0.7rem; color: var(--text-dim); display: block; }
+  .download-badge .text strong { font-size: 0.95rem; }
+
+  /* ===== Footer ===== */
+  footer {
+    padding: 50px 5% 30px; text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-dim); font-size: 0.9rem;
+  }
+  footer .footer-logo {
+    display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    font-weight: 600; color: var(--text);
+  }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .step::after { display: none; }
+    .hero { padding-top: 100px; }
+  }
+
+  /* ===== 滚动渐入 ===== */
+  .fade-in {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.8s, transform 0.8s;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- 动态背景 -->
+<div class="bg-animation">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- 导航 -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    QuickCommand
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">功能</a></li>
+    <li><a href="#gestures">手势</a></li>
+    <li><a href="#how">使用流程</a></li>
+    <li><a href="#download">下载</a></li>
+  </ul>
+  <a href="#download" class="nav-cta">立即体验</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Android 手势快捷工具
+  </div>
+  <h1>
+    画个手势，<span class="gradient">一键直达</span><br>
+    你的命令，触手可及
+  </h1>
+  <p>
+    QuickCommand 让你在屏幕上画一个手势就能打开应用、设置提醒、开关 WiFi。
+    无需解锁、无需翻找，真正的效率工具。
+  </p>
+  <div class="hero-buttons">
+    <a href="#download" class="btn-primary">⬇ 下载 APK</a>
+    <a href="#features" class="btn-secondary">了解更多</a>
+  </div>
+
+  <!-- 手势动画展示 -->
+  <div class="gesture-demo">
+    <div class="phone">
+      <svg class="gesture-svg" viewBox="0 0 200 200">
+        <path d="M 50,150 C 50,50 150,50 150,150 C 150,250 50,250 50,150" />
+      </svg>
+    </div>
+    <div class="gesture-label">画圆圈 → <span class="action">打开微信</span></div>
+  </div>
+</div>
+
+<!-- 功能 -->
+<section id="features" class="fade-in">
+  <div class="section-title">
+    <h2>核心功能</h2>
+    <p>简洁、高效、可定制</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">👆</div>
+      <h3>屏幕手势触发</h3>
+      <p>在任何界面画手势即可执行命令，无需切换应用。支持圆形、三角形、V形、对勾、方向滑动等 10 种预设手势，也支持自定义手势录制。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>打开应用</h3>
+      <p>将常用应用绑定到手势。画个圆圈打开微信，画个三角打开支付宝——你的手势，你做主。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⏰</div>
+      <h3>智能提醒</h3>
+      <p>通过手势快速设置闹钟提醒，无需打开时钟应用。画个对勾，提醒马上就到。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>快捷开关</h3>
+      <p>一键切换 WiFi、蓝牙、手电筒等系统功能。向上一滑，手电筒亮起；向下一滑，WiFi 关闭。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <h3>后台常驻</h3>
+      <p>以前台服务方式运行，保证手势检测持续可用。支持开机自启动，重启手机后自动恢复服务。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <h3>自定义手势</h3>
+      <p>除了 9 种预设手势，还可以录制属于你自己的手势轨迹。$1 识别算法精准匹配，画什么就是什么。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 手势库 -->
+<section id="gestures" class="fade-in">
+  <div class="section-title">
+    <h2>手势库</h2>
+    <p>9 种预设手势 + 无限自定义</p>
+  </div>
+  <div class="gestures-showcase">
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/></svg>
+      <span>画圆圈</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><path d="M 8,38 L 24,8 L 40,38 Z"/></svg>
+      <span>三角形</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><rect x="10" y="10" width="28" height="28"/></svg>
+      <span>方形</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><path d="M 8,12 L 24,36 L 40,12"/></svg>
+      <span>V 形</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><path d="M 8,24 L 20,36 L 40,12"/></svg>
+      <span>对勾 ✓</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><path d="M 24,40 L 24,8"/><polyline points="16,16 24,8 32,16"/></svg>
+      <span>上滑</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><path d="M 24,8 L 24,40"/><polyline points="16,32 24,40 32,32"/></svg>
+      <span>下滑</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><path d="M 40,24 L 8,24"/><polyline points="16,16 8,24 16,32"/></svg>
+      <span>左滑</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><path d="M 8,24 L 40,24"/><polyline points="32,16 40,24 32,32"/></svg>
+      <span>右滑</span>
+    </div>
+    <div class="gesture-item">
+      <svg viewBox="0 0 48 48"><path d="M 12,16 C 12,8 36,8 36,16 C 36,24 12,24 12,32 C 12,40 36,40 36,32" stroke-dasharray="3,3"/></svg>
+      <span>自定义</span>
+    </div>
+  </div>
+</section>
+
+<!-- 使用流程 -->
+<section id="how" class="fade-in">
+  <div class="section-title">
+    <h2>三步上手</h2>
+    <p>简单到不需要说明书</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-number">1</div>
+      <h3>创建命令</h3>
+      <p>点击「+」按钮，选择一个手势类型，再选择要执行的动作（打开应用、设置提醒等）。</p>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <h3>开启服务</h3>
+      <p>授予悬浮窗权限，启动手势检测服务。服务在后台常驻，开机自动启动。</p>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <h3>画手势触发</h3>
+      <p>在任意界面画出手势，命令立即执行。就这么简单。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 下载 -->
+<section id="download" class="fade-in">
+  <div class="download-section">
+    <h2>开始你的<span class="gradient" style="background:var(--gradient-text);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">快捷生活</span></h2>
+    <p>QuickCommand 完全免费，支持 Android 8.0 及以上</p>
+    <div class="download-buttons">
+      <a href="#" class="download-badge">
+        <span class="icon">📱</span>
+        <span class="text">
+          <small>直接下载</small>
+          <strong>APK 安装包</strong>
+        </span>
+      </a>
+      <a href="#" class="download-badge">
+        <span class="icon">📂</span>
+        <span class="text">
+          <small>开发者</small>
+          <strong>GitHub 源码</strong>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-logo">
+    <span style="font-size:1.2rem;">⚡</span> QuickCommand
+  </div>
+  <p>快捷命令 · 手势即命令 · 让效率触手可及</p>
+  <p style="margin-top:8px; font-size:0.8rem; opacity:0.5;">© 2026 QuickCommand · Made with ❤️ in Kotlin</p>
+</footer>
+
+<script>
+  // 滚动渐入
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // 平滑滚动
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // 手势循环动画 — 切换不同手势
+  const gestures = [
+    { d: 'M 50,150 C 50,50 150,50 150,150 C 150,250 50,250 50,150', label: '画圆圈 → <span class="action">打开微信</span>' },
+    { d: 'M 60,140 L 100,50 L 140,140 Z', label: '画三角形 → <span class="action">打开支付宝</span>' },
+    { d: 'M 60,60 L 140,60 L 140,140 L 60,140 Z', label: '画方形 → <span class="action">打开相机</span>' },
+    { d: 'M 50,70 L 100,150 L 150,70', label: '画 V 形 → <span class="action">设置提醒</span>' },
+    { d: 'M 50,100 L 90,140 L 150,60', label: '画对勾 → <span class="action">开关手电筒</span>' },
+  ];
+  let gIdx = 0;
+  const gesturePath = document.querySelector('.gesture-svg path');
+  const gestureLabel = document.querySelector('.gesture-label');
+  setInterval(() => {
+    gIdx = (gIdx + 1) % gestures.length;
+    gesturePath.setAttribute('d', gestures[gIdx].d);
+    gestureLabel.innerHTML = gestures[gIdx].label;
+  }, 3000);
+</script>
+
+</body>
+</html>
